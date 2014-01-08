@@ -1,0 +1,5 @@
+{
+  "server" : "hostname or ip-address of registry server",
+  "port"   : 5000,
+  "docker_home" : "/var/lib/docker"
+}
