@@ -12,7 +12,7 @@ class DockerRepos
     load
     @server = config["server"]
     @port   = config["port"]
-    @docker_home = config["docker_home"]
+    @registry_path = config["registry_path"]
   end
 
   def call env
@@ -21,10 +21,10 @@ class DockerRepos
 
   def image_list
     reg = IO.popen('docker ps -notrunc') do |io|
-      io.readlines.select {|item| item =~ %r|stackbrew/registry|}[0]
+      io.readlines.select {|item| item =~ %r|stackbrew/registry|}[0].split[0]
     end
 
-    Dir.chdir("#{@docker_home}/devicemapper/mnt/#{reg.split[0]}/rootfs/tmp/registry/repositories")
+    Dir.chdir("#{@registry_path.sub("__CONTAINER_ID__",reg)}/repositories")
     repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
 
     ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
