@@ -24,7 +24,7 @@ class DockerRepos
       io.readlines.select {|item| item =~ %r|stackbrew/registry|}[0].split[0]
     end
 
-    Dir.chdir("#{@registry_path.sub("__CONTAINER_ID__",reg)}/repositories")
+    Dir.chdir("#{@registry_path % reg}/repositories")
     repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
 
     ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
