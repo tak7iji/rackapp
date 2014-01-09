@@ -2,14 +2,11 @@
 
 require 'net/http'
 require 'json'
-require_relative 'appconfig'
 
 class DockerRepos
 
-  include AppConfig
 
-  def initialize
-    load
+  def initialize config
     @server = config["server"]
     @port   = config["port"]
     @registry_path = config["registry_path"]

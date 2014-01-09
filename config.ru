@@ -2,12 +2,16 @@
 
 require "./lib/repos.rb"
 require "./lib/taginfo.rb"
+require "./lib/appconfig.rb"
+
+extend AppConfig
+
+config = load_config
 
 map "/" do
-  run DockerRepos.new
+  run DockerRepos.new config
 end
 
 map "/info" do
-#  run lambda {|env| [200, {'Content-Type' => 'text/html'}, ["<html>","OK","</html>"]]}
-  run TagInfo.new
+  run TagInfo.new config
 end

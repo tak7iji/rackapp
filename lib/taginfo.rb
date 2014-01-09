@@ -2,14 +2,10 @@
 
 require 'net/http'
 require 'json'
-require_relative 'appconfig'
 
 class TagInfo
 
-  include AppConfig
-
-  def initialize
-    load
+  def initialize config
     @server = config["server"]
     @port   = config["port"]
   end
