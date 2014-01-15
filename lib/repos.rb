@@ -4,8 +4,6 @@ require 'net/http'
 require 'json'
 
 class DockerRepos
-
-
   def initialize config
     @server = config["server"]
     @port   = config["port"]
