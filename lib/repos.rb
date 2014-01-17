@@ -7,7 +7,6 @@ class DockerRepos
   def initialize config
     @server = config["server"]
     @port   = config["port"]
-    @registry_path = config["registry_path"]
   end
 
   def call env
@@ -15,14 +14,25 @@ class DockerRepos
   end
 
   def image_list
-    reg = IO.popen('docker ps -notrunc') do |io|
-      io.readlines.select {|item| item =~ %r|stackbrew/registry|}[0].split[0]
-    end
-
-    Dir.chdir("#{@registry_path % reg}/repositories")
+    Dir.chdir("#{get_registry_path}/repositories")
     repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
 
     ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
+  end
+
+  def get_registry_path
+    reg = IO.popen('docker ps -notrunc') do |io|
+      io.readlines.find {|item| item =~ %r|stackbrew/registry|}.split[0]
+    end
+
+    js = File.open("/var/lib/docker/containers/#{reg}/config.json") {|file| JSON.load(file)}
+    rootdir = case js["Driver"]
+              when "devicemapper"
+                "/rootfs"
+              else
+                ""
+              end
+    js["Volumes"]["/tmp/registry"] || "/var/lib/docker/#{js["Driver"]}/mnt/#{reg}#{rootdir}/tmp/registry"
   end
 
   def create_body repos

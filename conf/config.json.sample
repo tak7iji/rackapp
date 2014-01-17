@@ -1,5 +1,4 @@
 {
   "server" : "hostname or ip-address of registry server",
   "port"   : 5000,
-  "registry_path" : "/path/to/registry"
 }
