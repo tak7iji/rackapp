@@ -14,25 +14,32 @@ class DockerRepos
   end
 
   def image_list
-    Dir.chdir("#{get_registry_path}/repositories")
-    repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
-
-    ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
+    begin
+      Dir.chdir("#{get_registry_path}/repositories")
+      repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
+  
+      ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
+    rescue
+      []
+    end
   end
 
   def get_registry_path
-    reg = IO.popen('docker ps -notrunc') do |io|
-      io.readlines.find {|item| item =~ %r|stackbrew/registry|}.split[0]
+    js = ""
+    Dir.glob("/var/lib/docker/containers/*/config.json").find do |item|
+      js = File.open(item) { |file| JSON.load(file) }
+      js["State"]["Running"] && js["Args"].any?{|e| e =~ /docker-registry/}
     end
 
-    js = File.open("/var/lib/docker/containers/#{reg}/config.json") {|file| JSON.load(file)}
     rootdir = case js["Driver"]
               when "devicemapper"
-                "/rootfs"
-              else
-                ""
+                "devicemapper/mnt/#{js['ID']}/rootfs"
+              when "aufs"
+                "aufs/mnt/#{js['ID']}"
+              when "vfs"
+                "vfs/dir/#{js['ID']}"
               end
-    js["Volumes"]["/tmp/registry"] || "/var/lib/docker/#{js["Driver"]}/mnt/#{reg}#{rootdir}/tmp/registry"
+    js["Volumes"]["/tmp/registry"] || "/var/lib/docker/#{rootdir}/tmp/registry"
   end
 
   def create_body repos
