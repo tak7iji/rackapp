@@ -27,19 +27,24 @@ class DockerRepos
   def get_registry_path
     js = ""
     Dir.glob("/var/lib/docker/containers/*/config.json").find do |item|
-      js = File.open(item) { |file| JSON.load(file) }
-      js["State"]["Running"] && js["Args"].any?{|e| e =~ /docker-registry/}
+      File.open(item) do |file| 
+        js = JSON.load(file)
+        js["State"]["Running"] && js["Args"].any?{|e| e =~ /docker-registry/}
+      end
     end
 
-    rootdir = case js["Driver"]
-              when "devicemapper"
-                "devicemapper/mnt/#{js['ID']}/rootfs"
-              when "aufs"
-                "aufs/mnt/#{js['ID']}"
-              when "vfs"
-                "vfs/dir/#{js['ID']}"
-              end
-    js["Volumes"]["/tmp/registry"] || "/var/lib/docker/#{rootdir}/tmp/registry"
+    js["Volumes"]["/tmp/registry"] || "/var/lib/docker/#{get_root_dir(js['Driver'],js['ID'])}/tmp/registry"
+  end
+
+  def get_root_dir driver, id
+    case driver
+    when "devicemapper"
+      "devicemapper/mnt/#{id}/rootfs"
+    when "aufs"
+      "aufs/mnt/#{id}"
+    when "vfs"
+      "vfs/dir/#{id}"
+    end
   end
 
   def create_body repos
