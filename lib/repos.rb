@@ -16,7 +16,7 @@ class DockerRepos
   def image_list
     begin
       Dir.chdir("#{get_registry_path}/repositories")
-      repos = Dir.glob("**/").select{|e| e =~ /[\/].+$/}.map{|e| e.chop.sub("library/","")}
+      repos = Dir.glob("**/").select{|e| e =~ %r|[/].+$|}.map{|e| e.chop.sub("library/","")}
   
       ["Docker Image List<br><ul>", create_body(repos).join, "</ul>"]
     rescue
@@ -49,7 +49,7 @@ class DockerRepos
 
   def create_body repos
     repos.map do |e|
-      "<li>#{@server}:#{@port}/#{e} (tags: #{create_tag_info(e).join(', ')})"
+      "<li>#{@server}:#{@port}/#{e} (tags: #{create_tag_info(e)*', '})"
     end
   end
 
