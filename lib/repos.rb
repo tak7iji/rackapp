@@ -29,7 +29,7 @@ class DockerRepos
     Dir.glob("/var/lib/docker/containers/*/config.json").find do |item|
       File.open(item) do |file| 
         js = JSON.load(file)
-        js["State"]["Running"] && js["Args"].any?{|e| e =~ /docker-registry/}
+        js["State"]["Running"] && js["Args"].any?{|e| /docker-registry/ === e}
       end
     end
 
